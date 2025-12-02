@@ -5,9 +5,15 @@ const User = require("./models/user.model");
 const app = express();
 
 
+// middleware ====> it can't get stuck at '/' route ,it will move to nexxt route bcoz of "next" function  so it check all of the router that /user is their or not ,the checking the chain of the routes called middleware
+
+app.use("/",(req,res,next) => {
+    console.log("Middleware working fine");
+    next()
+})
 // app.use("/user1",[rh1,rh2,rh3],rh4,rh5)
 
-app.get("/user",(req,res,next) => {
+app.use("/user",(req,res,next) => {
     console.log("User route working fine");
     // res.status(200).json({
     //     message: "response 1"

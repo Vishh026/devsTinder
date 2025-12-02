@@ -4,6 +4,36 @@ const User = require("./models/user.model");
 
 const app = express();
 
+
+// app.use("/user1",[rh1,rh2,rh3],rh4,rh5)
+
+app.get("/user",(req,res,next) => {
+    console.log("User route working fine");
+    // res.status(200).json({
+    //     message: "response 1"
+    // })
+    next()
+},
+[(req,res,next)=> {
+    console.log("User route working fine 2");
+    res.status(200).json({
+        message: "response 2"
+    })
+    next()
+},
+(req,res) => {
+    console.log("User route working fine 3");
+    res.status(200).json({
+        message: "response 3"
+    })
+    next()
+}]
+)
+
+
+
+
+
 app.post("/signup", async (req, res) => {
   const userObj = {
     firstName: "vaishnavi",

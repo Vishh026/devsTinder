@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const validator = require('validator'); 
 
 const userSchema = new mongoose.Schema({
   firstName: {
@@ -15,6 +16,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     required:true,
     lowercase:true,
+    validate : (value) => {
+      if(!validator.isEmail(value)){
+        throw new Error("Invalid E-Mail")
+      }
+    }
   },
   dateOfBirth: {
     type: Date,
@@ -42,7 +48,12 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-    min: 18
+    min: 18,
+    validate: (value) => {
+      if(!validator.isStrongPassword(value)){
+        throw new Error("Password is to easy to break")
+      }
+    }
   },
   experince: {
     type: Number,
@@ -51,6 +62,15 @@ const userSchema = new mongoose.Schema({
   githubUrl: {
     type: String
   },
+  profile: {
+    type: String,
+    required:true,
+    validate: (value) => {
+      if(!validator.isURL(value)){
+        throw new Error("Invalid Url")
+      }
+    }
+  }
 },{timestamps: true});
 
 const User = mongoose.model("User", userSchema);

@@ -18,6 +18,10 @@ app.patch("/updateUser/:userid", async (req, res) => {
       throw new error("Updates are not allowed")
     }
 
+    if(data?.skills.length >= 8){
+      throw new Error("only 8 skills you'll abole to add")
+    }
+
     const updateduser = await User.findByIdAndUpdate(userid, data, {
       returnDocument: "after",
     });

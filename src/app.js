@@ -6,10 +6,18 @@ const app = express();
 
 app.use(express.json());
 
-app.patch("/updateUser", async (req, res) => {
-  const userid = req.body.userid;
+app.patch("/updateUser/:userid", async (req, res) => {
+  const userid = req.params.userid;
   const data = req.body;
   try {
+    const allowed_Updates = [ "age", "bio", "skills", "experience"];
+    const updatedAllowed = Object.keys(data).every((k) =>
+      allowed_Updates.includes(k)
+    );
+    if (!updatedAllowed) {
+      throw new error("Updates are not allowed")
+    }
+
     const updateduser = await User.findByIdAndUpdate(userid, data, {
       returnDocument: "after",
     });

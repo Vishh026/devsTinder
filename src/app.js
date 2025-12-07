@@ -1,7 +1,8 @@
 const express = require("express");
 const connectDb = require("./config/database");
 const User = require("./models/user.model");
-
+const bcrypt = require("bcrypt");
+const { validatingSignUpData } = require("./utilities/ValidatingData");
 const app = express();
 
 app.use(express.json());
@@ -10,33 +11,41 @@ app.patch("/updateUser/:userid", async (req, res) => {
   const userid = req.params.userid;
   const data = req.body;
   try {
-    const allowed_Updates = [ "age", "bio", "skills", "experience"];
+    const allowed_Updates = ["age", "bio", "skills", "experience"];
     const updatedAllowed = Object.keys(data).every((k) =>
       allowed_Updates.includes(k)
     );
     if (!updatedAllowed) {
-      throw new error("Updates are not allowed")
+      throw new Error("Updates are not allowed");
     }
 
-    if(data?.skills.length >= 8){
-      throw new Error("only 8 skills you'll abole to add")
+    if (data.skills && data.skills.length >= 8) {
+      throw new Error("only 8 skills you'll abole to add");
     }
 
     const updateduser = await User.findByIdAndUpdate(userid, data, {
-      returnDocument: "after",
+      new: true,
     });
-    res.status(201).json(updateduser, "user updated successfully");
+    res
+      .status(201)
+      .json({ message: "user updated successfully", user: updateduser });
   } catch (err) {
     res.status(400).send(err.message);
   }
 });
 
-app.delete("/deleteuser", async (req, res) => {
+app.delete("/deleteuser/:userid", async (req, res) => {
   try {
-    const userid = req.body.userId;
-    await User.findByIdAndDelete(userid);
+    const userid = req.params.userid;
+    if(!userid){
+      return res.status(401).send("user id required")
+    }
+    const deletedUser  = await User.findByIdAndDelete(userid)
+    if(!deletedUser){
+      return res.status(404).send("user not found")
+    }
 
-    res.status(201).send("user deleted successfully");
+    res.status(201).json({message: "User deleted successfully",userId: userId});
   } catch (err) {
     res.status(500).send(err.message);
   }
@@ -44,13 +53,32 @@ app.delete("/deleteuser", async (req, res) => {
 
 app.post("/signup", async (req, res) => {
   try {
-    const newUser = new User(req.body);
+    const {firstName,lastName,password,email,profile,dateOfBirth} = req.body;
 
+    // validating the user
+    const errmsg = validatingSignUpData(req, res);
+    if (errmsg) {
+      return res.status(400).json({ error: errmsg });
+    }
+
+    // Encrypt the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    // create the user
+    const newUser = new User({
+      firstName,
+      lastName,
+      dateOfBirth,
+      email,
+      profile,
+      password: hashedPassword,
+    });
+
+    // save the user
     await newUser.save();
 
-    res.status(201).send("succesfully signup");
+    return res.status(201).json({message: "succesfully signup"});
   } catch (error) {
-    res.status(401).send(error.message);
+    return res.status(401).send(error.message);
   }
 });
 
@@ -71,12 +99,12 @@ app.get("/getUser", async (req, res) => {
   try {
     const singleUser = await User.findOne({ email: req.body.email });
     if (!singleUser) {
-      res.status(404).send("user not found");
+      return res.status(404).send("user not found");
     } else {
-      res.status(201).send(singleUser, "user found successfully");
+      return res.status(201).send(singleUser, "user found successfully");
     }
   } catch (err) {
-    res.send(401, "server error");
+    return res.status(401).json("server error: " + err.message);
   }
 });
 

@@ -61,6 +61,18 @@ userRouter.patch("/updateUser/:userid",  async (req, res) => {
     return res.status(400).send(`ERR: ${err.message}`);
   }
 })
+userRouter.get("/getUser", async (req, res) => {
+  try {
+    const singleUser = await User.findOne({ email: req.body.email });
+    if (!singleUser) {
+      return res.status(404).send("user not found");
+    } else {
+      return res.status(201).send(singleUser, "user found successfully");
+    }
+  } catch (err) {
+    return res.status(401).json("server error: " + err.message);
+  }
+})
 
 
 module.exports = userRouter

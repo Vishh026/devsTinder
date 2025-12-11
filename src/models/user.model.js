@@ -68,7 +68,7 @@ const userSchema = new mongoose.Schema(
         }
       },
     },
-    experince: {
+    experience: {
       type: Number,
       min: 0,
     },

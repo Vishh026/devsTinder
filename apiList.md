@@ -13,8 +13,13 @@ PATCH/profile/password =
 STATUS: profile => ignore ,interested,accepted,rejected
 
 connectionRequestsRouter
+POST /request/:status/:userid
+
 POST /request/intereted/:userid
 POST /request/ignored/:userid
+
+
+
 POST /request/review/accepted/:reqId
 POST /request/review/rejected/:reqId
 

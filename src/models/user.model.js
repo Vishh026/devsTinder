@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const crypto = require('crypto')
 
 const userSchema = new mongoose.Schema(
   {
@@ -51,6 +52,7 @@ const userSchema = new mongoose.Schema(
     },
     phone: {
       type: String,
+      unique:true,
       validate: {
         validator(value) {
           if (!value) return true; // allow empty phone
@@ -84,6 +86,13 @@ const userSchema = new mongoose.Schema(
         }
       },
     },
+    resetPasswordToken: {
+      type:String
+    },
+    resetPasswordExpires: {
+      type: Date
+    }
+
   },
   { timestamps: true }
 );
@@ -109,6 +118,19 @@ userSchema.methods.hashPassword = async function(userPassword){
 
   return passwordHash
 }
+
+userSchema.methods.hashResetToken = async function(){
+  // genrate token
+  const resetToken = crypto.randomBytes(20).toString("hex")
+  // hash the token before saving
+  this.resetPasswordToken = crypto.createHash("sha256").update(resetToken).digest("hex")
+  // expires in 10 min
+  this.resetPasswordExpires = Date.now() + 10 * 60 * 1000
+  // returns token 
+
+  return resetToken
+}
+userSchema.index({ firstName : 1})
 
 const User = mongoose.model("User", userSchema);
 

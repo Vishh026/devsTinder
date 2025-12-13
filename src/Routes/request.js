@@ -92,9 +92,4 @@ requestRouter.post(
   }
 );
 
-// find =>
-// 1.check the aksahy valid or not
-// 2.toUserId === loggediN user
-// 3.status = "interested"
-
 module.exports = requestRouter;

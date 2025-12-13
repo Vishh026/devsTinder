@@ -15,12 +15,11 @@ authRouter.post("/login", async (req, res) => {
     if (!isValidEmail) return res.status(404).send("invalid email");
 
     // check email present in db or not
-    const user = await User.findOne({ email: email });
+    const user = await User.findOne({ email: email })
     if (!user) return res.status(404).send("Invalid Crendentials");
 
     // check password is correct or not => bcrypt.compare()
     const CheckPassword = await user.validatePassword(password)
-    console.log("check",CheckPassword)
 
     if (CheckPassword) {
       // crete the jwt token => jwt.sign()
@@ -31,7 +30,8 @@ authRouter.post("/login", async (req, res) => {
         expires: new Date(Date.now() + 8 * 3600000),
       });
 
-      return res.status(201).json("Login successfull");
+      return res.status(201).json({
+        message: `${user.firstName} Login successfully`})
     } else {
       return res.status(404).send("Invalid Crendentials");
     }

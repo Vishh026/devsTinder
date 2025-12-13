@@ -13,21 +13,14 @@ PATCH/profile/password =
 STATUS: profile => ignore ,interested,accepted,rejected
 
 connectionRequestsRouter
-POST /request/:status/:userid
+POST /request/send/:status/:userid
+POST /request/review/:status/:reqId
 
-POST /request/intereted/:userid
-POST /request/ignored/:userid
-
-
-
-POST /request/review/accepted/:reqId
-POST /request/review/rejected/:reqId
 
 userRouter
+GET /user/request/pending
 GET /user/connections
-GET /user/received
 GET /user/feed => get uou the profiles
-
 
 
 PATCH

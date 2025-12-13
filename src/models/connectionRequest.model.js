@@ -5,16 +5,18 @@ const connectionRequestSchema = new mongoose.Schema(
     fromUserId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
+      ref: 'User'
     },
     toUserId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
+      ref: 'User'
     },
     status: {
       type: String,
       required: true,
       enum: {
-        values: ["interested", "ignored"],
+        values: ["interested", "ignored","accepted","rejected"],
         message: `{VALUE} is not valid type of status`,
       },
     },
@@ -24,9 +26,8 @@ const connectionRequestSchema = new mongoose.Schema(
   }
 );
 
-connectionRequestSchema.pre("save", function (next) {
-  // validated the sender or receiver same ,if same throw an error
-  const connectionRequest = this;
+
+connectionRequestSchema.pre("save", async function () {
   if (this.fromUserId.equals(this.toUserId)) {
     throw new Error("You can't send connection request to yourself");
   }

@@ -2,77 +2,26 @@ const express = require('express')
 const userRouter = express.Router()
 const User = require("../models/user.model")
 
-userRouter.get("/feed", async (req, res) => {
-  try {
-    const users = await User.find({});
-    if (users.length === 0) {
-      res.send(401).json("Users not found");
-    } else {
-      res.status(201).send(users, "Fetch all users successfully");
-    }
-  } catch (error) {
-    res.status(400).json(error.message);
-  }
-})
-userRouter.delete("/deleteuser/:userid", async (req, res) => {
-  try {
-    const userid = req.params.userid;
-    if (!userid) {
-      return res.status(401).send("user id required");
-    }
-    const deletedUser = await User.findByIdAndDelete(userid);
-    if (!deletedUser) {
-      return res.status(404).send("user not found");
-    }
+// pending all requeest = pending 
 
-    res
-      .status(201)
-      .json({ message: "User deleted successfully", userId: userId });
-  } catch (err) {
-     return res.status(400).send(`ERR: ${err.message}`);
-  }
-})
-userRouter.patch("/updateUser/:userid",  async (req, res) => {
-  const userid = req.params.userid;
-  const updates = req.body;
-  try {
-    const allowed_Updates = ["age", "bio", "skills", "experience"];
-    const updatedAllowed = Object.keys(updates).every((k) =>
-      allowed_Updates.includes(k)
-    );
-    if (!updatedAllowed) {
-      throw new Error("Updates are not allowed");
-    }
 
-    if (updates.skills && updates.skills.length >= 8) {
-      throw new Error("only 8 skills you'll abole to add");
-    }
-    
 
-    const updateduser = await User.findByIdAndUpdate(userid, updates,{
-      new:true,
-      runValidators: true
-    });
 
-    res
-      .status(201)
-      .json({ message: "user updated successfully", user: updateduser });
-  } catch (err) {
-    return res.status(400).send(`ERR: ${err.message}`);
-  }
-})
-userRouter.get("/getUser", async (req, res) => {
-  try {
-    const singleUser = await User.findOne({ email: req.body.email });
-    if (!singleUser) {
-      return res.status(404).send("user not found");
-    } else {
-      return res.status(201).send(singleUser, "user found successfully");
-    }
-  } catch (err) {
-    return res.status(401).json("server error: " + err.message);
-  }
-})
+//  => get the loggedinuser
+//  => find =>  1.ttouserID === loggedinuser  2.status= "interested"
+//  => we get all data but we got id's => for showing data in the frontend what we need
+//     => all user's data ?? how to fetch the data ??
+//         1) findeach user and get teh data from database  (poor way)
+//         2) fromUserId : { ref : 'UseraModel'},
+//             .populate("fromUserId" ,["firstname lastname age gender"])
+
+
+
+
+// get all connection => (1:1)
+//  => get the logginuser
+//  => findout  => fromuserid and touserid (accepted) => or  => populate
+// [removing id,update at and other stuff ] map on fromuserid info which is taken from the populate
 
 
 module.exports = userRouter

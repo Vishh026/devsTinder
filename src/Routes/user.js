@@ -1,51 +1,68 @@
 const express = require("express");
 const userRouter = express.Router();
-const User = require("../models/user.model");
 const { userAuth } = require("../middlewares/auth.middleware");
 const connectionRequestModel = require("../models/connectionRequest.model");
-// pending all requeest = pending
 
+const SAFE_DATA_PARAMETERS = "firstName lastName";
+
+// ================= PENDING REQUESTS =================
 userRouter.get("/user/request/pending", userAuth, async (req, res) => {
   try {
-    const loggedInUser = req.user;
-    if(!loggedInUser || !loggedInUser._id){
-        return res.status(401).send("Unauthorized user")
-    }
+    const loggedInUserId = req.user._id;
 
     const connectionRequest = await connectionRequestModel
       .find({
-        toUserId: loggedInUser._id,
+        toUserId: loggedInUserId,
         status: "interested",
       })
-      .populate("fromUserId", "firstName lastName")
-      .populate("toUserId", "firstName lastName");
-    console.log(connectionRequest);
+      .populate("fromUserId", SAFE_DATA_PARAMETERS);
+
     if (connectionRequest.length === 0) {
-      throw new Error("No request exists");
+      return res.status(200).json({
+        message: "No pending requests",
+        data: [],
+      });
     }
 
-    res.status(201).json({
-      message: "fetch all pending request successfully",
-      connectionRequest,
+    res.status(200).json({
+      message: "Pending requests fetched successfully",
+      data: connectionRequest,
     });
   } catch (err) {
-    res.status(400).json(err.message);
+    res.status(400).json({ error: err.message });
   }
 });
 
+// ================= ACCEPTED CONNECTIONS =================
+userRouter.get("/user/connections", userAuth, async (req, res) => {
+  try {
+    const loggedInUserId = req.user._id.toString();
 
+    const connectionRequests = await connectionRequestModel
+      .find({
+        $or: [
+          { fromUserId: req.user._id, status: "accepted" },
+          { toUserId: req.user._id, status: "accepted" },
+        ],
+      })
+      .populate("fromUserId", SAFE_DATA_PARAMETERS)
+      .populate("toUserId", SAFE_DATA_PARAMETERS);
 
-//  => get the loggedinuser
-//  => find =>  1.ttouserID === loggedinuser  2.status= "interested"
-//  => we get all data but we got id's => for showing data in the frontend what we need
-//     => all user's data ?? how to fetch the data ??
-//         1) findeach user and get teh data from database  (poor way)
-//         2) fromUserId : { ref : 'UseraModel'},
-//             .populate("fromUserId" ,["firstname lastname age gender"])
+    const otherPersonsData = connectionRequests.map(raw => {
+      const fromId = raw.fromUserId._id.toString();
 
-// get all connection => (1:1)
-//  => get the logginuser
-//  => findout  => fromuserid and touserid (accepted) => or  => populate
-// [removing id,update at and other stuff ] map on fromuserid info which is taken from the populate
+      return fromId === loggedInUserId
+        ? raw.toUserId
+        : raw.fromUserId;
+    });
+
+    res.status(200).json({
+      message: "Connections fetched successfully",
+      data: otherPersonsData,
+    });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
 
 module.exports = userRouter;

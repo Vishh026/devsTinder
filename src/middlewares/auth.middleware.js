@@ -9,7 +9,7 @@ const userAuth = async (req, res, next) => {
     if (!token) return res.status(401).send("token not valid");
 
     // validate the token
-    const { _id } = await jwt.verify(token, "devtindersercrete");
+    const { _id } = await jwt.verify(token, process.env.JWT_SECRETE_KEY);
 
     // get the user
     const user = await userModel.findById(_id);
